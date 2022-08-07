@@ -51,6 +51,8 @@ def train_data(args):
     else:
         os.mkdir(temp_dir_path)
 
+    # Copy selected images into temporary directory
+
     for img_path in train_data:
         full_img_path = pre_path + '/' + img_path
 
@@ -69,6 +71,7 @@ def train(args):
     transform = transforms.Compose([
         transforms.Resize(args.image_size),
         transforms.CenterCrop(args.image_size),
+        transforms.RandomRotation(args.rotation_degrees),
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x.mul(255))
     ])
@@ -247,6 +250,8 @@ def main():
     train_arg_parser.add_argument("--checkpoint-interval", type=int, default=2000,
                                   help="number of batches after which a checkpoint of the trained model will be created")
     train_arg_parser.add_argument("--nr-of-img", type=int, default=10,
+                                  help="Number of images used for training")
+    train_arg_parser.add_argument("--rotation-degrees", type=tuple, default=(0 , 360),
                                   help="Number of images used for training")
 
     eval_arg_parser = subparsers.add_parser("eval", help="parser for evaluation/stylizing arguments")
