@@ -251,8 +251,8 @@ def main():
                                   help="number of batches after which a checkpoint of the trained model will be created")
     train_arg_parser.add_argument("--nr-of-img", type=int, default=10,
                                   help="Number of images used for training")
-    train_arg_parser.add_argument("--rotation-degrees", type=tuple, default=(0 , 360),
-                                  help="Number of images used for training")
+    train_arg_parser.add_argument("--rotation-degrees", nargs=2, type=int, default=(0,360),
+                                  help="Number of images used for training - type them like --rotation-degrees 0 90")
 
     eval_arg_parser = subparsers.add_parser("eval", help="parser for evaluation/stylizing arguments")
     eval_arg_parser.add_argument("--content-image", type=str, required=True,
