@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import re
+import shutil
 
 import numpy as np
 import torch
@@ -15,6 +16,7 @@ import torch.onnx
 import utils
 from transformer_net import TransformerNet
 from vgg import Vgg16
+import pandas as pd
 
 
 def check_paths(args):
@@ -26,6 +28,36 @@ def check_paths(args):
     except OSError as e:
         print(e)
         sys.exit(1)
+
+def train_data(args):
+    #define local paths
+    pre_path = r'/Users/Morten/Downloads/imagenette2-320'
+    temp_dir_path = r'/Users/Morten/Desktop/veo/images'
+
+
+    # Load csv with image names
+    csv_path = pre_path + '/noisy_imagenette.csv'
+    full_data = pd.read_csv(csv_path)
+
+    # Randomly sample 100 images
+
+    train_data = full_data[full_data["is_valid"] == False]['path'].sample(args.nr_of_img)
+
+    # Create Temporary directory to accomodate datasets.imageFolder
+
+    if os.path.exists(temp_dir_path):
+        shutil.rmtree(temp_dir_path, ignore_errors=False, onerror=None)
+        os.mkdir(temp_dir_path)
+    else:
+        os.mkdir(temp_dir_path)
+
+    for img_path in train_data:
+        full_img_path = pre_path + '/' + img_path
+
+        img_name = img_path.split('/')[-1]
+
+        full_dir_path = temp_dir_path + '/' + img_name
+        shutil.copyfile(full_img_path, full_dir_path)
 
 
 def train(args):
@@ -187,7 +219,7 @@ def main():
                                   help="number of training epochs, default is 2")
     train_arg_parser.add_argument("--batch-size", type=int, default=4,
                                   help="batch size for training, default is 4")
-    train_arg_parser.add_argument("--dataset", type=str, required=True,
+    train_arg_parser.add_argument("--dataset", type=str, default=r'/Users/Morten/Desktop/veo',
                                   help="path to training dataset, the path should point to a folder "
                                        "containing another folder with all the training images")
     train_arg_parser.add_argument("--style-image", type=str, default="images/style-images/mosaic.jpg",
@@ -214,6 +246,8 @@ def main():
                                   help="number of images after which the training loss is logged, default is 500")
     train_arg_parser.add_argument("--checkpoint-interval", type=int, default=2000,
                                   help="number of batches after which a checkpoint of the trained model will be created")
+    train_arg_parser.add_argument("--nr-of-img", type=int, default=10,
+                                  help="Number of images used for training")
 
     eval_arg_parser = subparsers.add_parser("eval", help="parser for evaluation/stylizing arguments")
     eval_arg_parser.add_argument("--content-image", type=str, required=True,
@@ -239,6 +273,7 @@ def main():
         sys.exit(1)
 
     if args.subcommand == "train":
+        train_data(args)
         check_paths(args)
         train(args)
     else:
